@@ -2,6 +2,7 @@ import random
 import requests
 import misc
 import telebot
+from telebot import types
 
 token = misc.token
 bot = telebot.TeleBot(token)
@@ -39,24 +40,30 @@ def get_joke():
     return res['joke']
 
 
-@bot.message_handler(commands=['total'])
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton('Шутка')
+    item2 = types.KeyboardButton('Цитата')
+    item3 = types.KeyboardButton('Рандомная задача')
+    item4 = types.KeyboardButton('Количество заболевших в РБ')
+
+    markup.add(item1, item2, item3, item4)
+
+    bot.send_message(message.chat.id, 'Привет', reply_markup=markup)
+
+
+@bot.message_handler(content_types=['text'])
 def bot_message(message):
-    bot.send_message(message.chat.id, f'Всего заболевших в Республике Беларусь: {get_total_confirmed()}')
-
-
-@bot.message_handler(commands=['quote'])
-def bot_quote(message):
-    bot.send_message(message.chat.id, f'Держи цитату: {get_quote()}')
-
-
-@bot.message_handler(commands=['diy'])
-def bot_diy(message):
-    bot.send_message(message.chat.id, f'Твоя задача на ближайшее время: {get_diy()}')
-
-
-@bot.message_handler(commands=['joke'])
-def bot_joke(message):
-    bot.send_message(message.chat.id, f'Разрывная шутка: {get_joke()}')
+    if message.chat.type == 'private':
+        if message.text == 'Шутка':
+            bot.send_message(message.chat.id, f'Разрывная шутка: {get_joke()}')
+        elif message.text == 'Цитата':
+            bot.send_message(message.chat.id, f'Держи цитату: {get_quote()}')
+        elif message.text == 'Количество заболевших в РБ':
+            bot.send_message(message.chat.id, f'Всего заболевших в Республике Беларусь: {get_total_confirmed()}')
+        elif message.text == 'Рандомная задача':
+            bot.send_message(message.chat.id, f'Твоя задача на ближайшее время: {get_diy()}')
 
 
 bot.infinity_polling()
